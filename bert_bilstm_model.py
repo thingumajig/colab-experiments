@@ -518,8 +518,7 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
         init_string = ""
         if var.name in initialized_variable_names:
           init_string = ", *INIT_FROM_CKPT*"
-        print("  name = %s, shape = %s%s", var.name, var.shape,
-                        init_string)
+        print(f"  name = {var.name}, shape = {var.shape}{init_string}")
 
     output_spec = None
     if mode == tf.estimator.ModeKeys.PREDICT:

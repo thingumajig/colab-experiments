@@ -132,6 +132,7 @@ def render_entity(token, label):
 
 def render_predictions_html(predict_examples, result, id2label):
   str = render_styles()
+  prev_label = None
   for predict_example, prediction in zip(predict_examples, result):
     tokens = predict_example.tokens
     poss = predict_example.poss
@@ -151,10 +152,6 @@ def render_predictions_html(predict_examples, result, id2label):
       if p_label == 'X': p_label = 'O'
       if label == 'X': continue
       org_token = tokens[seq]
-      org_pos = poss[seq]
-      org_chunk = chunks[seq]
-      org_label = labels[seq]
-      output_line = ' '.join([org_token, org_pos, org_chunk, org_label, p_label])
       if p_label == 'O':
         if org_token == '.':
           str += '. '
@@ -165,3 +162,44 @@ def render_predictions_html(predict_examples, result, id2label):
       seq += 1
   return str
 
+
+def render_predictions_html_v2(predict_examples, result, id2label):
+  str = render_styles()
+  prev_label = None
+  prev_token = None
+  entities = []
+
+  def add_e(t, l):
+    if prev_label == l:
+      (oldtoken, oldlabel) = entities.pop()
+      entities.append((oldtoken + ' ' + t, l))
+    else:
+      entities.append((t, l))
+
+  for predict_example, prediction in zip(predict_examples, result):
+    tokens = predict_example.tokens
+    labels = predict_example.labels
+    tokenized_tokens = predict_example.tokenized_tokens
+    tokenized_labels = predict_example.tokenized_labels
+    text = predict_example.text
+    length = len(tokenized_tokens)
+    seq = 0
+    for token, label, p_id in zip(tokenized_tokens, tokenized_labels, prediction[1:length + 1]):
+      p_label = 'O'
+      if p_id != 0: p_label = id2label[p_id]
+      if p_label == 'X': p_label = 'O'
+      if label == 'X': continue
+      org_token = tokens[seq]
+
+      add_e(org_token + ' ', p_label)
+
+      prev_label = p_label
+      prev_token = org_token
+      seq += 1
+
+  for e in entities:
+    if e[1] == 'O':
+      str += e[0]
+    else:
+      str += render_entity(e[0], e[1])
+  return str
