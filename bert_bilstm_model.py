@@ -315,17 +315,20 @@ def file_based_input_fn_builder(input_file, seq_length, is_training, drop_remain
     for name in list(example.keys()):
       t = example[name]
       if t.dtype == tf.int64:
-        t = tf.cast(t, tf.dtypes.int32, name="ToInt32") # t = tf.to_int32(t)
+        # t = tf.cast(t, tf.dtypes.int32, name="ToInt32") # t = tf.to_int32(t)
+        t = tf.to_int32(t)
       example[name] = t
     return example
 
   def input_fn(params):
     batch_size = params["batch_size"]
     d = tf.data.TFRecordDataset(input_file)
+    print(f'input_fn: batch_size={batch_size} is_training={is_training}')
     if is_training:
       d = d.repeat()
       d = d.shuffle(buffer_size=100)
-    d = d.apply(tf.data.experimental.map_and_batch(
+    # d = d.apply(tf.data.experimental.map_and_batch(
+    d = d.apply(tf.contrib.data.map_and_batch(
       lambda record: _decode_record(record, name_to_features),
       batch_size=batch_size,
       drop_remainder=drop_remainder
@@ -475,6 +478,7 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
     print('shape of label_ids', label_ids.shape)
     # label_mask = features["label_mask"]
     is_training = (mode == tf.estimator.ModeKeys.TRAIN)
+    print(f'estimator mode: {mode}')
 
     (total_loss, per_example_loss, logits, trans, pred_ids) = create_model(
       bert_config, is_training, input_ids, input_mask, segment_ids, label_ids,
