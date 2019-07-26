@@ -22,8 +22,8 @@ nltk.download('punkt')
 from nltk.tokenize import word_tokenize, sent_tokenize
 
 
-flags = tf.flags
-FLAGS = flags.FLAGS
+# flags = tf.flags
+# FLAGS = flags.FLAGS
 
 class InputExample(object):
   """A single training/test example for simple sequence classification."""
@@ -285,6 +285,8 @@ def convert_feature_to_tf_example(feature):
 
 
 def filed_based_convert_examples_to_features(examples, label_list, max_seq_length, tokenizer, output_file, mode=None):
+  FLAGS = tf.flags.FLAGS
+
   # build labe2id.pkl
   label_map = {}
   for (i, label) in enumerate(label_list, 1):  # 0 index for '0' padding
@@ -303,6 +305,8 @@ def filed_based_convert_examples_to_features(examples, label_list, max_seq_lengt
 
 
 def file_based_input_fn_builder(input_file, seq_length, is_training, drop_remainder):
+  FLAGS = tf.flags.FLAGS
+
   name_to_features = {
     "input_ids": tf.io.FixedLenFeature([seq_length], tf.int64),
     "input_mask": tf.io.FixedLenFeature([seq_length], tf.int64),
@@ -340,6 +344,8 @@ def file_based_input_fn_builder(input_file, seq_length, is_training, drop_remain
 
 def create_model(bert_config, is_training, input_ids, input_mask,
                  segment_ids, labels, num_labels, use_one_hot_embeddings):
+  FLAGS = tf.flags.FLAGS
+
   model = modeling.BertModel(
     config=bert_config,
     is_training=is_training,
@@ -378,6 +384,8 @@ def create_model(bert_config, is_training, input_ids, input_mask,
       return tf.layers.dropout(outputs, rate=dropout_rate, training=is_training)
 
   def lstm_layer(inputs, lengths, is_training):
+    FLAGS = tf.flags.FLAGS
+
     rnn_output = tf.identity(inputs)
     for i in range(2):
       scope = 'bi-lstm-fused-%s' % i
@@ -402,6 +410,8 @@ def create_model(bert_config, is_training, input_ids, input_mask,
       return output
 
   def loss_layer(logits, labels, num_labels, lengths, input_mask):
+    FLAGS = tf.flags.FLAGS
+
     trans = tf.get_variable(
       "transitions",
       shape=[num_labels, num_labels],
