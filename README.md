@@ -3,3 +3,4 @@
 1. Kaggle data load
 1. RetinaNet video object detection
 1. BERT BiLSTM-CRF NER
+2. BERT visualization
